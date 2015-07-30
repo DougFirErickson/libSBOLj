@@ -1,7 +1,6 @@
 package org.sbolstandard.core2;
 
-import static org.sbolstandard.core2.URIcompliance.createCompliantURI;
-import static org.sbolstandard.core2.URIcompliance.isURIcompliant;
+import static org.sbolstandard.core2.URIcompliance.*;
 
 import java.net.URI;
 
@@ -72,7 +71,7 @@ public class Model extends TopLevel {
 	 * is allowed to be edited.
 	 * 
 	 * @param source
-	 * @throws SBOLException if the associated SBOLDocument is not compliant.
+	 * @throws SBOLValidationException if the associated SBOLDocument is not compliant.
 	 * @throws IllegalArgumentException if the given {@code source} argument is {@code null}
 	 */
 	public void setSource(URI source) {
@@ -101,7 +100,7 @@ public class Model extends TopLevel {
 	 * is allowed to be edited.
 	 * 
 	 * @param language
-	 * @throws SBOLException if the associated SBOLDocument is not compliant.
+	 * @throws SBOLValidationException if the associated SBOLDocument is not compliant.
 	 * @throws IllegalArgumentException if the given {@code language} argument is {@code null}
 	 */
 	public void setLanguage(URI language) {
@@ -130,7 +129,7 @@ public class Model extends TopLevel {
 	 * is allowed to be edited.
 	 * 
 	 * @param framework
-	 * @throws SBOLException if the associated SBOLDocument is not compliant.
+	 * @throws SBOLValidationException if the associated SBOLDocument is not compliant.
 	 * @throws IllegalArgumentException if the given {@code framework} argument is {@code null}
 	 */
 	public void setFramework(URI framework) {
@@ -189,11 +188,15 @@ public class Model extends TopLevel {
 	@Override
 	Model copy(String URIprefix, String displayId, String version) {
 		Model cloned = this.deepCopy();
-		cloned.setWasDerivedFrom(this.getIdentity());
 		cloned.setPersistentIdentity(createCompliantURI(URIprefix,displayId,""));
 		cloned.setDisplayId(displayId);
 		cloned.setVersion(version);
 		URI newIdentity = createCompliantURI(URIprefix,displayId,version);
+		if (!this.getIdentity().equals(newIdentity)) {
+			cloned.setWasDerivedFrom(this.getIdentity());
+		} else {
+			cloned.setWasDerivedFrom(this.getWasDerivedFrom());
+		}
 		cloned.setIdentity(newIdentity);
 		return cloned;
 	}
@@ -203,7 +206,7 @@ public class Model extends TopLevel {
 	 */
 	@Override
 	protected boolean checkDescendantsURIcompliance() {
-		return isURIcompliant(this.getIdentity(), 0);
+		return isTopLevelURIformCompliant(this.getIdentity());
 	}
 
 	//	/**

@@ -1,7 +1,6 @@
 package org.sbolstandard.core2;
 
-import static org.sbolstandard.core2.URIcompliance.createCompliantURI;
-import static org.sbolstandard.core2.URIcompliance.isURIcompliant;
+import static org.sbolstandard.core2.URIcompliance.*;
 
 import java.net.URI;
 
@@ -84,7 +83,7 @@ public class Sequence extends TopLevel{
 	 * is allowed to be edited.
 	 * 
 	 * @param elements
-	 * @throws SBOLException if the associated SBOLDocument is not compliant.
+	 * @throws SBOLValidationException if the associated SBOLDocument is not compliant.
 	 * @throws IllegalArgumentException if the given {@code elements} argument is {@code null}
 	 */
 	public void setElements(String elements) {
@@ -113,7 +112,7 @@ public class Sequence extends TopLevel{
 	 * is allowed to be edited.
 	 * 
 	 * @param encoding
-	 * @throws SBOLException if the associated SBOLDocument is not compliant.
+	 * @throws SBOLValidationException if the associated SBOLDocument is not compliant.
 	 * @throws IllegalArgumentException if the given {@code encoding} argument is {@code null}
 	 */
 	public void setEncoding(URI encoding) {
@@ -166,11 +165,15 @@ public class Sequence extends TopLevel{
 	@Override
 	protected Sequence copy(String URIprefix, String displayId, String version) {
 		Sequence cloned = this.deepCopy();
-		cloned.setWasDerivedFrom(this.getIdentity());
 		cloned.setPersistentIdentity(createCompliantURI(URIprefix,displayId,""));
 		cloned.setDisplayId(displayId);
 		cloned.setVersion(version);
 		URI newIdentity = createCompliantURI(URIprefix,displayId,version);
+		if (!this.getIdentity().equals(newIdentity)) {
+			cloned.setWasDerivedFrom(this.getIdentity());
+		} else {
+			cloned.setWasDerivedFrom(this.getWasDerivedFrom());
+		}
 		cloned.setIdentity(newIdentity);
 		return cloned;
 	}
@@ -180,7 +183,7 @@ public class Sequence extends TopLevel{
 	 */
 	@Override
 	protected boolean checkDescendantsURIcompliance() {
-		return isURIcompliant(this.getIdentity(), 0);
+		return isTopLevelURIformCompliant(this.getIdentity());
 	}
 
 

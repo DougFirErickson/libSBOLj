@@ -63,7 +63,7 @@ public class FunctionalComponent extends ComponentInstance {
 	 * is allowed to be edited.
 	 * 
 	 * @param direction
-	 * @throws SBOLException if the associated SBOLDocument is not compliant
+	 * @throws SBOLValidationException if the associated SBOLDocument is not compliant
 	 * @throws IllegalArgumentException if the given {@code direction} is {@code null}
 	 * 
 	 */
@@ -105,7 +105,9 @@ public class FunctionalComponent extends ComponentInstance {
 	 * This method is called by {@link ComponentDefinition#copy(String, String, String)}.
 	 */
 	void updateCompliantURI(String URIprefix, String displayId, String version) {
-		this.setWasDerivedFrom(this.getIdentity());
+		if (!this.getIdentity().equals(createCompliantURI(URIprefix,displayId,version))) {
+			this.setWasDerivedFrom(this.getIdentity());
+		}
 		this.setIdentity(createCompliantURI(URIprefix,displayId,version));		
 		this.setPersistentIdentity(createCompliantURI(URIprefix,displayId,""));
 		this.setDisplayId(displayId);
@@ -153,7 +155,7 @@ public class FunctionalComponent extends ComponentInstance {
 	 */
 	public MapsTo createMapsTo(String displayId, RefinementType refinement, URI local, URI remote) {
 		if (sbolDocument!=null) sbolDocument.checkReadOnly();
-		String parentPersistentIdStr = extractPersistentId(this.getIdentity());
+		String parentPersistentIdStr = this.getPersistentIdentity().toString();
 		String version = this.getVersion();
 		MapsTo m = createMapsTo(createCompliantURI(parentPersistentIdStr, displayId, version),
 				refinement, local, remote);
@@ -167,7 +169,7 @@ public class FunctionalComponent extends ComponentInstance {
 	 * Adds the specified instance to the list of references. 
 	 */
 	void addMapsTo(MapsTo mapsTo) {
-		if (sbolDocument != null && sbolDocument.isComplete()) {
+		if (sbolDocument != null) {
 			if (moduleDefinition.getFunctionalComponent(mapsTo.getLocalURI())==null) {
 				throw new IllegalArgumentException("Functional component '" + mapsTo.getLocalURI() + "' does not exist.");
 			}
@@ -197,7 +199,7 @@ public class FunctionalComponent extends ComponentInstance {
 	 * @param mapsTo
 	 * @return {@code true} if the matching MapsTo instance is removed successfully,
 	 *         {@code false} otherwise.
-	 * @throws SBOLException if the associated SBOLDocument is not compliant.
+	 * @throws SBOLValidationException if the associated SBOLDocument is not compliant.
 	 *
 	 */
 	public boolean removeMapsTo(MapsTo mapsTo) {
@@ -242,7 +244,7 @@ public class FunctionalComponent extends ComponentInstance {
 	 * then the SBOLDcouement instance is checked for compliance first. Only a compliant SBOLDocument instance
 	 * is allowed to be edited.
 	 * 
-	 * @throws SBOLException if the associated SBOLDocument is not compliant
+	 * @throws SBOLValidationException if the associated SBOLDocument is not compliant
 	 */
 	public void clearMapsTos() {
 		if (sbolDocument!=null) sbolDocument.checkReadOnly();

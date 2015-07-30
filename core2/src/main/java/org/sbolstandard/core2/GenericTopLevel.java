@@ -24,7 +24,7 @@ public class GenericTopLevel extends TopLevel{
 		super(identity);
 		this.rdfType = rdfType;
 		if (rdfType.getPrefix().toString().equals("sbol")) {
-			throw new SBOLException(rdfType.getLocalPart()+" is not an SBOL object, so it cannot be in the SBOL namespace.");
+			throw new SBOLValidationException(rdfType.getLocalPart()+" is not an SBOL object, so it cannot be in the SBOL namespace.");
 		}
 	}
 	
@@ -50,7 +50,7 @@ public class GenericTopLevel extends TopLevel{
 	 * is allowed to be edited.
 	 *
 	 * @param rdfType
-	 * @throws SBOLException if the associated SBOLDocument is not compliant.
+	 * @throws SBOLValidationException if the associated SBOLDocument is not compliant.
 	 * @throws IllegalArgumentException if the given {@code rdfType} argument is {@code null}
 	 */
 	public void setRDFType(QName rdfType) {
@@ -118,11 +118,15 @@ public class GenericTopLevel extends TopLevel{
 	@Override
 	GenericTopLevel copy(String URIprefix, String displayId, String version) {
 		GenericTopLevel cloned = this.deepCopy();
-		cloned.setWasDerivedFrom(this.getIdentity());
 		cloned.setPersistentIdentity(createCompliantURI(URIprefix,displayId,""));
 		cloned.setDisplayId(displayId);
 		cloned.setVersion(version);
-		URI newIdentity = createCompliantURI(URIprefix,displayId,version);			
+		URI newIdentity = createCompliantURI(URIprefix,displayId,version);	
+		if (!this.getIdentity().equals(newIdentity)) {
+			cloned.setWasDerivedFrom(this.getIdentity());
+		} else {
+			cloned.setWasDerivedFrom(this.getWasDerivedFrom());
+		}
 		cloned.setIdentity(newIdentity);
 		return cloned;
 	}
@@ -132,7 +136,7 @@ public class GenericTopLevel extends TopLevel{
 	 */
 	@Override
 	protected boolean checkDescendantsURIcompliance() {
-		return isURIcompliant(this.getIdentity(), 0);
+		return isTopLevelURIformCompliant(this.getIdentity());
 	}
 
 }
